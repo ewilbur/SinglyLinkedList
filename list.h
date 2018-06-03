@@ -19,8 +19,10 @@ class List {
       Node(T datum, Node *next) : datum(datum), next(next) {}
     } *hd;
 
-    void destroy(Node*); // Recursively destroys the nodes starting at argument
-    void qsort(Node**, Node*); // helper function to quick sort a list
+    /* | Recursively destroys the nodes starting at argument */
+    void destroy(Node*);
+    /* | helper function to quick sort a list */
+    void qsort(Node**, Node*);
 
   public:
     List();
@@ -32,27 +34,41 @@ class List {
     /* | Append to the list */
     void snoc(T);
 
-    void init(); // Drops last element from list
-    void tail(); // Drops first element from list
+    /* | Drops last element from list */
+    void init();
+    /* Drops first element from list */
+    void tail();
 
-    T head() const; // Returns first element of list. Throws exception if empty
-    T last() const; // Returns last element of list. Throws exception if empty
-    T pop_head(); // Returns first element of list and removes it. Throws exception if empty
-    T pop_last(); // Returns last element of list and removes it. Throws exception if empty
+    /* | Returns first element of list. Throws exception if empty */
+    T head() const;
+    /* | Returns last element of list. Throws EMPTYLIST exception if empty */
+    T last() const;
+    /* | Returns first element of list and removes it. Throws exception if empty */
+    T pop_head();
+    /* | Returns last element of list and removes it. Throws exception if empty */
+    T pop_last();
 
-    void remove(T); // Removes first occurence of argument
-    void purge(T); // Removes all occurences of argument
+    /* | Removes first occurence of argument */
+    void remove(T);
+    /* | Removes all occurences of argument */
+    void purge(T);
 
-    void drop(size_t); // Drops the first n elements of the list
-    void take(size_t); // Takes the first n elemtns of the list
+    /* | Drops the first n elements of the list */
+    void drop(size_t);
+    /* | Takes the first n elemtns of the list */
+    void take(size_t);
 
-    void sort(); // Sorts the list
+    /* | Sorts the list */
+    void sort();
 
-    bool elem(T) const; // Retuns true iff argument is in the list
+    /* | Retuns true iff argument is in the list */
+    bool elem(T) const;
 
-    void reverse(); // Reverse the order of the list
+    /* | Reverse the order of the list */
+    void reverse();
 
-    size_t length() const; // Returns the length of the list
+    /* | Returns the length of the list */
+    size_t length() const;
 
     bool operator==(const List<T>&) const;
     bool operator!=(const List<T>&) const;
@@ -78,37 +94,43 @@ void List<T>::destroy(Node *node) {
   delete node;
 }
 
+/* | Use quicksort on elements from *headRef up to last treating the first
+ * node as the pivot */
 template <class T>
 void List<T>::qsort(Node **headRef, Node *last) {
-  if (*headRef == last || ! (*headRef)) return;
+  if (*headRef == last || ! (*headRef))
+    return;
 
   Node *pivot = *headRef;
   Node *step = (*headRef)->next;
   Node **prev = &(*headRef)->next;
 
   while (step != last) {
+    /* | If the datam at step is larger than the pivot, just go to the next
+     * element */
     if (step->datum > pivot->datum) {
       prev = &step->next;
       step = step->next;
     } else {
-      *prev = step->next;
-      step->next = *headRef;
-      *headRef = step;
-      step = *prev;
+      *prev = step->next;    // Take the node out of the list
+      step->next = *headRef; // Put step at the front of the list _
+      *headRef = step;       // <---------------------------------/
+      step = *prev;          // Iterate to the next element
     }
   }
-  qsort(headRef, pivot);
-  qsort(&pivot->next, last);
+  qsort(headRef, pivot);     // Recursively sort the rest of the list _
+  qsort(&pivot->next, last); // <-------------------------------------/
 }
 
 template <class T>
 List<T>::List() : hd(0) {}
 
+/* | Not an incredibly efficient copy constructor, but it's terse so
+ * I like it */
 template <class T>
 List<T>::List(const List<T> &list) {
-  for (Node *step = list.hd; step; step = step->next) {
+  for (Node *step = list.hd; step; step = step->next)
     cons(step->cons);
-  }
   reverse();
 }
 
@@ -171,8 +193,9 @@ T List<T>::pop_last() {
 
 template <class T>
 T List<T>::last() const {
-  if (!hd) throw(EMPTYLIST);
   Node *step = hd;
+  if (!hd)
+    throw(EMPTYLIST);
   while (step->next)
     step = step->next;
   return step->datum;
@@ -180,7 +203,8 @@ T List<T>::last() const {
 
 template <class T>
 T List<T>::head() const {
-  if (!hd) throw(EMPTYLIST);
+  if (!hd)
+    throw(EMPTYLIST);
   return hd->datum;
 }
 
