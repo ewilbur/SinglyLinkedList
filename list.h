@@ -2,6 +2,7 @@
 #define LIST_H_
 
 #include <iostream>
+#include <cstdlib>
 
 enum ListException {
   EMPTYLIST
@@ -40,16 +41,25 @@ class List {
     void remove(T); // Removes first occurence of argument
     void purge(T); // Removes all occurences of argument
 
-    void drop(unsigned int); // Drops the first n elements of the list
-    void take(unsigned int); // Takes the first n elemtns of the list
+    void drop(size_t); // Drops the first n elements of the list
+    void take(size_t); // Takes the first n elemtns of the list
 
     void sort(); // Sorts the list
 
-    bool elem(T); // Retuns true iff argument is in the list
+    bool elem(T) const; // Retuns true iff argument is in the list
 
     void reverse(); // Reverse the order of the list
 
     void print(); // Prints the contents of the list
+
+    size_t length() const; // Returns the length of the list
+
+    bool operator==(const List<T>&) const;
+    bool operator!=(const List<T>&) const;
+    bool operator>=(const List<T>&) const;
+    bool operator<=(const List<T>&) const;
+    bool operator>(const List<T>&) const;
+    bool operator<(const List<T>&) const;
 };
 
 
@@ -74,11 +84,10 @@ void List<T>::qsort(Node **headRef, Node *last) {
       prev = &step->next;
       step = step->next;
     } else {
-      Node *next = step->next;
       *prev = step->next;
       step->next = *headRef;
       *headRef = step;
-      step = next;
+      step = *prev;
     }
   }
   qsort(headRef, pivot);
@@ -194,7 +203,7 @@ void List<T>::purge(T datum) {
 }
 
 template <class T>
-void List<T>::drop(unsigned int k) {
+void List<T>::drop(size_t k) {
   Node *step = hd;
   Node *prev;
   while (step && k > 0) {
@@ -207,7 +216,7 @@ void List<T>::drop(unsigned int k) {
 }
 
 template <class T>
-void List<T>::take(unsigned int k) {
+void List<T>::take(size_t k) {
   Node **prev = &hd;
   Node *step = hd;
   while (step && k > 0) {
@@ -225,7 +234,7 @@ void List<T>::sort() {
 }
 
 template <class T>
-bool List<T>::elem(T datum) {
+bool List<T>::elem(T datum) const {
   for (Node *step = hd; step; step = step->next)
     if (step->datum == datum)
       return true;
@@ -246,11 +255,72 @@ void List<T>::reverse() {
 }
 
 template <class T>
+size_t List<T>::length() const {
+  int i = 0;
+  for (Node *step = hd; step; step = step->next, ++i);
+  return i;
+}
+
+template <class T>
 void List<T>::print() {
   for (Node *step = hd; step; step = step->next)
     std::cout << step->datum << ":";
 
   std::cout << "[]" << std::endl;
+}
+
+template <class T>
+bool List<T>::operator==(const List<T> &list) const {
+  Node *list1 = hd;
+  Node *list2 = list.hd;
+
+  for (; list1 && list2; list1 = list1->next, list2 = list2->next)
+    if (list1->datum != list2->datum)
+      return false;
+  return list1 == list2;
+}
+
+template <class T>
+bool List<T>::operator!=(const List<T> &list) const {
+  return !(*this == list);
+}
+
+template <class T>
+bool List<T>::operator>=(const List<T> &list) const {
+  Node *list1 = hd;
+  Node *list2 = list.hd;
+
+  for (; list1 && list2; list1 = list1->next, list2 = list2->next) {
+    if (list1->datum > list2->datum)
+      return true;
+    else if (list1->datum < list2->datum)
+      return false;
+  }
+  return (list1 == list2) || !list2;
+}
+
+template <class T>
+bool List<T>::operator<=(const List<T> &list) const {
+  return list >= *this;
+}
+
+template <class T>
+bool List<T>::operator>(const List<T> &list) const {
+  Node *list1 = hd;
+  Node *list2 = list.hd;
+
+  for (; list1 && list2; list1 = list1->next, list2 = list2->next) {
+    if (list1->datum > list2->datum)
+      return true;
+    else if (list1->datum < list2->datum)
+      return false;
+  }
+  return (list1 != list2) && !list2;
+}
+
+template <class T>
+bool List<T>::operator<(const List<T> &list) const {
+  return list > *this;
 }
 
 #endif // LIST_H_
