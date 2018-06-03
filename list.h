@@ -5,7 +5,8 @@
 #include <cstdlib>
 
 enum ListException {
-  EMPTYLIST
+  EMPTYLIST,
+  INDEXERROR,
 };
 
 template <class T>
@@ -23,6 +24,7 @@ class List {
 
   public:
     List();
+    List(const List<T>&);
     ~List();
 
     /* | Prepend to the list */
@@ -50,8 +52,6 @@ class List {
 
     void reverse(); // Reverse the order of the list
 
-    void print(); // Prints the contents of the list
-
     size_t length() const; // Returns the length of the list
 
     bool operator==(const List<T>&) const;
@@ -60,8 +60,15 @@ class List {
     bool operator<=(const List<T>&) const;
     bool operator>(const List<T>&) const;
     bool operator<(const List<T>&) const;
+    T operator[](size_t) const;
+    template <class Type>
+    friend std::ostream& operator<<(std::ostream &out, const List<Type> &list) {
+      for (Node *step = list.hd; step; step = step->next)
+        out << step->datum << ":";
+      out << "[]";
+      return out;
+    }
 };
-
 
 template <class T>
 void List<T>::destroy(Node *node) {
@@ -97,6 +104,13 @@ void List<T>::qsort(Node **headRef, Node *last) {
 template <class T>
 List<T>::List() : hd(0) {}
 
+template <class T>
+List<T>::List(const List<T> &list) {
+  for (Node *step = list.hd; step; step = step->next) {
+    cons(step->cons);
+  }
+  reverse();
+}
 
 template <class T>
 List<T>::~List() {
@@ -262,14 +276,6 @@ size_t List<T>::length() const {
 }
 
 template <class T>
-void List<T>::print() {
-  for (Node *step = hd; step; step = step->next)
-    std::cout << step->datum << ":";
-
-  std::cout << "[]" << std::endl;
-}
-
-template <class T>
 bool List<T>::operator==(const List<T> &list) const {
   Node *list1 = hd;
   Node *list2 = list.hd;
@@ -321,6 +327,16 @@ bool List<T>::operator>(const List<T> &list) const {
 template <class T>
 bool List<T>::operator<(const List<T> &list) const {
   return list > *this;
+}
+
+template <class T>
+T List<T>::operator[](size_t k) const {
+  Node *step = hd;
+  for (; step && k > 0; --k, step = step->next);
+  if (!step)
+    throw(INDEXERROR);
+
+  return step->datum;
 }
 
 #endif // LIST_H_
